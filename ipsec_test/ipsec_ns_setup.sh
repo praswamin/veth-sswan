@@ -56,8 +56,8 @@ ip netns exec hostA ping -c 2 10.200.2.20 || echo " Basic ping failed, check vet
 
  #=== Create StrongSwan configs ===
 echo "[+] Setting up StrongSwan namespace configs..."
-mkdir -p /etc/ipsec-ns/hostA/{swanctl}
-mkdir -p /etc/ipsec-ns/hostB/{swanctl}
+mkdir -p /etc/ipsec-ns/hostA/{swanctl,d}
+mkdir -p /etc/ipsec-ns/hostB/{swanctl,d}
 
 echo "[+] Setting up StrongSwan configs..."
 cat >/etc/ipsec-ns/hostA/strongswan.conf <<'EOF'
