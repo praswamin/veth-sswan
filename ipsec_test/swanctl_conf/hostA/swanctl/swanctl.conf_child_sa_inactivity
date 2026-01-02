@@ -1,0 +1,43 @@
+connections {
+    net-test {
+        local_addrs  = 10.200.1.10
+        remote_addrs = 10.200.2.20
+
+        local {
+            auth = psk
+            id = hostA
+        }
+        remote {
+            auth = psk
+            id = hostB
+        }
+
+        children {
+            net {
+                local_ts  = 10.10.0.1/28
+                remote_ts = 10.10.1.1/28
+                esp_proposals = aes128-sha256
+		start_action = trap
+            }
+
+            twenty {
+                local_ts  = 20.20.0.1/28
+                remote_ts = 20.20.1.1/28
+                esp_proposals = aes128-sha256
+		start_action = trap
+		inactivity = 1m
+            }
+        }
+
+        version = 2
+        proposals = aes128-sha256-modp2048
+    }
+}
+
+secrets {
+    ike-hostA-hostB {
+        id-1 = hostA
+        id-2 = hostB
+        secret = "strongsecret"
+    }
+}
