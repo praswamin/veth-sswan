@@ -1,0 +1,9 @@
+[
+  {"local_teid": 1001, "remote_teid": 2001},
+  {"local_teid": 1002, "remote_teid": 2002},
+  {"local_teid": 1003, "remote_teid": 2003},
+  {"local_teid": 1004, "remote_teid": 2004},
+  {"local_teid": 1005, "remote_teid": 2005},
+  {"local_teid": 1006, "remote_teid": 2006}
+]
+
