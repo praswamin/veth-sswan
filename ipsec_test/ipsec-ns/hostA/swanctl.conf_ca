@@ -1,0 +1,29 @@
+connections {
+    net-test {
+        version = 2
+
+        local_addrs  = 10.200.1.10
+        remote_addrs = 10.200.2.20
+
+        local {
+            auth = pubkey
+            certs = hostA.crt
+            id = "CN=hostA"
+        }
+
+        remote {
+            auth = pubkey
+            id = "CN=hostB"
+        }
+
+        proposals = aes128-sha256-modp2048
+
+        children {
+            net {
+                local_ts  = 10.10.0.1/28
+                remote_ts = 10.10.1.1/28
+                esp_proposals = aes128-sha256
+            }
+        }
+    }
+}
