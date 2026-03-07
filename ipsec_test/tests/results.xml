@@ -1,0 +1,414 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="2" failures="3" skipped="0" tests="11" time="6.563" timestamp="2026-03-06T16:57:32.359039+05:30" hostname="DESKTOP-IA5BQ6V"><testcase classname="test_00_server_status" name="test_api_health" time="0.039" /><testcase classname="test_01_setup" name="test_namespace_setup" time="1.868"><error message="failed on setup with &quot;requests.exceptions.JSONDecodeError: Expecting value: line 1 column 1 (char 0)&quot;">self = &lt;Response [500]&gt;, kwargs = {}
+
+    def json(self, **kwargs):
+        r"""Returns the json-encoded content of a response, if any.
+    
+        :param \*\*kwargs: Optional arguments that ``json.loads`` takes.
+        :raises requests.exceptions.JSONDecodeError: If the response body does not
+            contain valid json.
+        """
+    
+        if not self.encoding and self.content and len(self.content) &gt; 3:
+            # No encoding set. JSON RFC 4627 section 3 states we should expect
+            # UTF-8, -16 or -32. Detect which one to use; If the detection or
+            # decoding fails, fall back to `self.text` (using charset_normalizer to make
+            # a best guess).
+            encoding = guess_json_utf(self.content)
+            if encoding is not None:
+                try:
+                    return complexjson.loads(self.content.decode(encoding), **kwargs)
+                except UnicodeDecodeError:
+                    # Wrong UTF codec detected; usually because it's not UTF-8
+                    # but some other 8-bit codec.  This is an RFC violation,
+                    # and the server didn't bother to tell us what codec *was*
+                    # used.
+                    pass
+                except JSONDecodeError as e:
+                    raise RequestsJSONDecodeError(e.msg, e.doc, e.pos)
+    
+        try:
+&gt;           return complexjson.loads(self.text, **kwargs)
+
+C:\Users\prash\AppData\Local\Programs\Python\Python313\Lib\site-packages\requests\models.py:974: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Users\prash\AppData\Local\Programs\Python\Python313\Lib\json\__init__.py:346: in loads
+    return _default_decoder.decode(s)
+C:\Users\prash\AppData\Local\Programs\Python\Python313\Lib\json\decoder.py:344: in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;json.decoder.JSONDecoder object at 0x0000027323374590&gt;
+s = '&lt;!doctype html&gt;\n&lt;html lang=en&gt;\n&lt;title&gt;500 Internal Server Error&lt;/title&gt;\n&lt;h1&gt;Internal Server Error&lt;/h1&gt;\n&lt;p&gt;The ser...nd was unable to complete your request. Either the server is overloaded or there is an error in the application.&lt;/p&gt;\n'
+idx = 0
+
+    def raw_decode(self, s, idx=0):
+        """Decode a JSON document from ``s`` (a ``str`` beginning with
+        a JSON document) and return a 2-tuple of the Python
+        representation and the index in ``s`` where the document ended.
+    
+        This can be used to decode a JSON document from a string that may
+        have extraneous data at the end.
+    
+        """
+        try:
+            obj, end = self.scan_once(s, idx)
+        except StopIteration as err:
+&gt;           raise JSONDecodeError("Expecting value", s, err.value) from None
+E           json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+C:\Users\prash\AppData\Local\Programs\Python\Python313\Lib\json\decoder.py:362: JSONDecodeError
+
+During handling of the above exception, another exception occurred:
+
+    @pytest.fixture(scope="session")
+    def setup_ipsec():
+        # Idempotent setup endpoint
+&gt;       resp = post("/api/ipsec/setup", {})
+
+conftest.py:8: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+test_lib\api.py:24: in post
+    return r.json()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;Response [500]&gt;, kwargs = {}
+
+    def json(self, **kwargs):
+        r"""Returns the json-encoded content of a response, if any.
+    
+        :param \*\*kwargs: Optional arguments that ``json.loads`` takes.
+        :raises requests.exceptions.JSONDecodeError: If the response body does not
+            contain valid json.
+        """
+    
+        if not self.encoding and self.content and len(self.content) &gt; 3:
+            # No encoding set. JSON RFC 4627 section 3 states we should expect
+            # UTF-8, -16 or -32. Detect which one to use; If the detection or
+            # decoding fails, fall back to `self.text` (using charset_normalizer to make
+            # a best guess).
+            encoding = guess_json_utf(self.content)
+            if encoding is not None:
+                try:
+                    return complexjson.loads(self.content.decode(encoding), **kwargs)
+                except UnicodeDecodeError:
+                    # Wrong UTF codec detected; usually because it's not UTF-8
+                    # but some other 8-bit codec.  This is an RFC violation,
+                    # and the server didn't bother to tell us what codec *was*
+                    # used.
+                    pass
+                except JSONDecodeError as e:
+                    raise RequestsJSONDecodeError(e.msg, e.doc, e.pos)
+    
+        try:
+            return complexjson.loads(self.text, **kwargs)
+        except JSONDecodeError as e:
+            # Catch JSON-related errors and raise as requests.JSONDecodeError
+            # This aliases json.JSONDecodeError and simplejson.JSONDecodeError
+&gt;           raise RequestsJSONDecodeError(e.msg, e.doc, e.pos)
+E           requests.exceptions.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+C:\Users\prash\AppData\Local\Programs\Python\Python313\Lib\site-packages\requests\models.py:978: JSONDecodeError</error></testcase><testcase classname="test_02_init_host" name="test_init_hostA" time="0.085" /><testcase classname="test_02_init_host" name="test_init_hostB" time="0.107" /><testcase classname="test_02_load_conns" name="test_load_hostA" time="0.981" /><testcase classname="test_02_load_conns" name="test_load_hostB" time="0.938" /><testcase classname="test_03_ipsec_child_add" name="test_child_add" time="1.005" /><testcase classname="test_03_ipsec_sa_stats" name="test_sa_stats" time="0.044"><failure message="requests.exceptions.HTTPError: 400 Client Error: BAD REQUEST for url: http://192.168.0.21:8080/api/ipsec/stats?ns=hostA">def test_sa_stats():
+        #resp = get("/api/ipsec/stats", {"ns": "hostA", "format": "table"})
+&gt;       resp = get("/api/ipsec/stats", {"ns": "hostA"})
+
+test_03_ipsec_sa_stats.py:5: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+test_lib\api.py:11: in get
+    r.raise_for_status()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;Response [400]&gt;
+
+    def raise_for_status(self):
+        """Raises :class:`HTTPError`, if one occurred."""
+    
+        http_error_msg = ""
+        if isinstance(self.reason, bytes):
+            # We attempt to decode utf-8 first because some servers
+            # choose to localize their reason strings. If the string
+            # isn't utf-8, we fall back to iso-8859-1 for all other
+            # encodings. (See PR #3538)
+            try:
+                reason = self.reason.decode("utf-8")
+            except UnicodeDecodeError:
+                reason = self.reason.decode("iso-8859-1")
+        else:
+            reason = self.reason
+    
+        if 400 &lt;= self.status_code &lt; 500:
+            http_error_msg = (
+                f"{self.status_code} Client Error: {reason} for url: {self.url}"
+            )
+    
+        elif 500 &lt;= self.status_code &lt; 600:
+            http_error_msg = (
+                f"{self.status_code} Server Error: {reason} for url: {self.url}"
+            )
+    
+        if http_error_msg:
+&gt;           raise HTTPError(http_error_msg, response=self)
+E           requests.exceptions.HTTPError: 400 Client Error: BAD REQUEST for url: http://192.168.0.21:8080/api/ipsec/stats?ns=hostA
+
+C:\Users\prash\AppData\Local\Programs\Python\Python313\Lib\site-packages\requests\models.py:1024: HTTPError</failure></testcase><testcase classname="test_04_ipsec_traffic" name="test_iperf_traffic" time="0.061"><failure message="requests.exceptions.JSONDecodeError: Expecting value: line 1 column 1 (char 0)">self = &lt;Response [500]&gt;, kwargs = {}
+
+    def json(self, **kwargs):
+        r"""Returns the json-encoded content of a response, if any.
+    
+        :param \*\*kwargs: Optional arguments that ``json.loads`` takes.
+        :raises requests.exceptions.JSONDecodeError: If the response body does not
+            contain valid json.
+        """
+    
+        if not self.encoding and self.content and len(self.content) &gt; 3:
+            # No encoding set. JSON RFC 4627 section 3 states we should expect
+            # UTF-8, -16 or -32. Detect which one to use; If the detection or
+            # decoding fails, fall back to `self.text` (using charset_normalizer to make
+            # a best guess).
+            encoding = guess_json_utf(self.content)
+            if encoding is not None:
+                try:
+                    return complexjson.loads(self.content.decode(encoding), **kwargs)
+                except UnicodeDecodeError:
+                    # Wrong UTF codec detected; usually because it's not UTF-8
+                    # but some other 8-bit codec.  This is an RFC violation,
+                    # and the server didn't bother to tell us what codec *was*
+                    # used.
+                    pass
+                except JSONDecodeError as e:
+                    raise RequestsJSONDecodeError(e.msg, e.doc, e.pos)
+    
+        try:
+&gt;           return complexjson.loads(self.text, **kwargs)
+
+C:\Users\prash\AppData\Local\Programs\Python\Python313\Lib\site-packages\requests\models.py:974: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Users\prash\AppData\Local\Programs\Python\Python313\Lib\json\__init__.py:346: in loads
+    return _default_decoder.decode(s)
+C:\Users\prash\AppData\Local\Programs\Python\Python313\Lib\json\decoder.py:344: in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;json.decoder.JSONDecoder object at 0x0000027323374590&gt;
+s = '&lt;!doctype html&gt;\n&lt;html lang=en&gt;\n&lt;title&gt;500 Internal Server Error&lt;/title&gt;\n&lt;h1&gt;Internal Server Error&lt;/h1&gt;\n&lt;p&gt;The ser...nd was unable to complete your request. Either the server is overloaded or there is an error in the application.&lt;/p&gt;\n'
+idx = 0
+
+    def raw_decode(self, s, idx=0):
+        """Decode a JSON document from ``s`` (a ``str`` beginning with
+        a JSON document) and return a 2-tuple of the Python
+        representation and the index in ``s`` where the document ended.
+    
+        This can be used to decode a JSON document from a string that may
+        have extraneous data at the end.
+    
+        """
+        try:
+            obj, end = self.scan_once(s, idx)
+        except StopIteration as err:
+&gt;           raise JSONDecodeError("Expecting value", s, err.value) from None
+E           json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+C:\Users\prash\AppData\Local\Programs\Python\Python313\Lib\json\decoder.py:362: JSONDecodeError
+
+During handling of the above exception, another exception occurred:
+
+    def test_iperf_traffic():
+    
+&gt;       server = post("/api/traffic/iperf/server", {
+            "ns": "hostB",
+            "bind_ip": "10.10.1.1",
+            "protocol": "udp"
+        })
+
+test_04_ipsec_traffic.py:6: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+test_lib\api.py:24: in post
+    return r.json()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;Response [500]&gt;, kwargs = {}
+
+    def json(self, **kwargs):
+        r"""Returns the json-encoded content of a response, if any.
+    
+        :param \*\*kwargs: Optional arguments that ``json.loads`` takes.
+        :raises requests.exceptions.JSONDecodeError: If the response body does not
+            contain valid json.
+        """
+    
+        if not self.encoding and self.content and len(self.content) &gt; 3:
+            # No encoding set. JSON RFC 4627 section 3 states we should expect
+            # UTF-8, -16 or -32. Detect which one to use; If the detection or
+            # decoding fails, fall back to `self.text` (using charset_normalizer to make
+            # a best guess).
+            encoding = guess_json_utf(self.content)
+            if encoding is not None:
+                try:
+                    return complexjson.loads(self.content.decode(encoding), **kwargs)
+                except UnicodeDecodeError:
+                    # Wrong UTF codec detected; usually because it's not UTF-8
+                    # but some other 8-bit codec.  This is an RFC violation,
+                    # and the server didn't bother to tell us what codec *was*
+                    # used.
+                    pass
+                except JSONDecodeError as e:
+                    raise RequestsJSONDecodeError(e.msg, e.doc, e.pos)
+    
+        try:
+            return complexjson.loads(self.text, **kwargs)
+        except JSONDecodeError as e:
+            # Catch JSON-related errors and raise as requests.JSONDecodeError
+            # This aliases json.JSONDecodeError and simplejson.JSONDecodeError
+&gt;           raise RequestsJSONDecodeError(e.msg, e.doc, e.pos)
+E           requests.exceptions.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+C:\Users\prash\AppData\Local\Programs\Python\Python313\Lib\site-packages\requests\models.py:978: JSONDecodeError</failure></testcase><testcase classname="test_05_ipsec_sa_stats" name="test_sa_stats" time="0.034"><failure message="requests.exceptions.HTTPError: 400 Client Error: BAD REQUEST for url: http://192.168.0.21:8080/api/ipsec/stats?ns=hostB">def test_sa_stats():
+&gt;       resp = get("/api/ipsec/stats", {"ns": "hostB"})
+
+test_05_ipsec_sa_stats.py:4: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+test_lib\api.py:11: in get
+    r.raise_for_status()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;Response [400]&gt;
+
+    def raise_for_status(self):
+        """Raises :class:`HTTPError`, if one occurred."""
+    
+        http_error_msg = ""
+        if isinstance(self.reason, bytes):
+            # We attempt to decode utf-8 first because some servers
+            # choose to localize their reason strings. If the string
+            # isn't utf-8, we fall back to iso-8859-1 for all other
+            # encodings. (See PR #3538)
+            try:
+                reason = self.reason.decode("utf-8")
+            except UnicodeDecodeError:
+                reason = self.reason.decode("iso-8859-1")
+        else:
+            reason = self.reason
+    
+        if 400 &lt;= self.status_code &lt; 500:
+            http_error_msg = (
+                f"{self.status_code} Client Error: {reason} for url: {self.url}"
+            )
+    
+        elif 500 &lt;= self.status_code &lt; 600:
+            http_error_msg = (
+                f"{self.status_code} Server Error: {reason} for url: {self.url}"
+            )
+    
+        if http_error_msg:
+&gt;           raise HTTPError(http_error_msg, response=self)
+E           requests.exceptions.HTTPError: 400 Client Error: BAD REQUEST for url: http://192.168.0.21:8080/api/ipsec/stats?ns=hostB
+
+C:\Users\prash\AppData\Local\Programs\Python\Python313\Lib\site-packages\requests\models.py:1024: HTTPError</failure></testcase><testcase classname="test_06_ipsec_cleanup" name="test_ipsec_cleanup" time="0.001"><error message="failed on setup with &quot;requests.exceptions.JSONDecodeError: Expecting value: line 1 column 1 (char 0)&quot;">self = &lt;Response [500]&gt;, kwargs = {}
+
+    def json(self, **kwargs):
+        r"""Returns the json-encoded content of a response, if any.
+    
+        :param \*\*kwargs: Optional arguments that ``json.loads`` takes.
+        :raises requests.exceptions.JSONDecodeError: If the response body does not
+            contain valid json.
+        """
+    
+        if not self.encoding and self.content and len(self.content) &gt; 3:
+            # No encoding set. JSON RFC 4627 section 3 states we should expect
+            # UTF-8, -16 or -32. Detect which one to use; If the detection or
+            # decoding fails, fall back to `self.text` (using charset_normalizer to make
+            # a best guess).
+            encoding = guess_json_utf(self.content)
+            if encoding is not None:
+                try:
+                    return complexjson.loads(self.content.decode(encoding), **kwargs)
+                except UnicodeDecodeError:
+                    # Wrong UTF codec detected; usually because it's not UTF-8
+                    # but some other 8-bit codec.  This is an RFC violation,
+                    # and the server didn't bother to tell us what codec *was*
+                    # used.
+                    pass
+                except JSONDecodeError as e:
+                    raise RequestsJSONDecodeError(e.msg, e.doc, e.pos)
+    
+        try:
+&gt;           return complexjson.loads(self.text, **kwargs)
+
+C:\Users\prash\AppData\Local\Programs\Python\Python313\Lib\site-packages\requests\models.py:974: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Users\prash\AppData\Local\Programs\Python\Python313\Lib\json\__init__.py:346: in loads
+    return _default_decoder.decode(s)
+C:\Users\prash\AppData\Local\Programs\Python\Python313\Lib\json\decoder.py:344: in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;json.decoder.JSONDecoder object at 0x0000027323374590&gt;
+s = '&lt;!doctype html&gt;\n&lt;html lang=en&gt;\n&lt;title&gt;500 Internal Server Error&lt;/title&gt;\n&lt;h1&gt;Internal Server Error&lt;/h1&gt;\n&lt;p&gt;The ser...nd was unable to complete your request. Either the server is overloaded or there is an error in the application.&lt;/p&gt;\n'
+idx = 0
+
+    def raw_decode(self, s, idx=0):
+        """Decode a JSON document from ``s`` (a ``str`` beginning with
+        a JSON document) and return a 2-tuple of the Python
+        representation and the index in ``s`` where the document ended.
+    
+        This can be used to decode a JSON document from a string that may
+        have extraneous data at the end.
+    
+        """
+        try:
+            obj, end = self.scan_once(s, idx)
+        except StopIteration as err:
+&gt;           raise JSONDecodeError("Expecting value", s, err.value) from None
+E           json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+C:\Users\prash\AppData\Local\Programs\Python\Python313\Lib\json\decoder.py:362: JSONDecodeError
+
+During handling of the above exception, another exception occurred:
+
+    @pytest.fixture(scope="session")
+    def setup_ipsec():
+        # Idempotent setup endpoint
+&gt;       resp = post("/api/ipsec/setup", {})
+
+conftest.py:8: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+test_lib\api.py:24: in post
+    return r.json()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;Response [500]&gt;, kwargs = {}
+
+    def json(self, **kwargs):
+        r"""Returns the json-encoded content of a response, if any.
+    
+        :param \*\*kwargs: Optional arguments that ``json.loads`` takes.
+        :raises requests.exceptions.JSONDecodeError: If the response body does not
+            contain valid json.
+        """
+    
+        if not self.encoding and self.content and len(self.content) &gt; 3:
+            # No encoding set. JSON RFC 4627 section 3 states we should expect
+            # UTF-8, -16 or -32. Detect which one to use; If the detection or
+            # decoding fails, fall back to `self.text` (using charset_normalizer to make
+            # a best guess).
+            encoding = guess_json_utf(self.content)
+            if encoding is not None:
+                try:
+                    return complexjson.loads(self.content.decode(encoding), **kwargs)
+                except UnicodeDecodeError:
+                    # Wrong UTF codec detected; usually because it's not UTF-8
+                    # but some other 8-bit codec.  This is an RFC violation,
+                    # and the server didn't bother to tell us what codec *was*
+                    # used.
+                    pass
+                except JSONDecodeError as e:
+                    raise RequestsJSONDecodeError(e.msg, e.doc, e.pos)
+    
+        try:
+            return complexjson.loads(self.text, **kwargs)
+        except JSONDecodeError as e:
+            # Catch JSON-related errors and raise as requests.JSONDecodeError
+            # This aliases json.JSONDecodeError and simplejson.JSONDecodeError
+&gt;           raise RequestsJSONDecodeError(e.msg, e.doc, e.pos)
+E           requests.exceptions.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+C:\Users\prash\AppData\Local\Programs\Python\Python313\Lib\site-packages\requests\models.py:978: JSONDecodeError</error></testcase></testsuite></testsuites>
