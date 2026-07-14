@@ -29,7 +29,7 @@ veth-sswan/
 ├── configs/                    	# strongSwan configuration templates
 │   ├── hostA/                  	# hostA namespace configs
 │   └── hostB/                  	# hostB namespace configs
-├── veth-sswan-orchestrator/     # MCP Orchestration layer
+├── veth-sswan-orchestrator/      # MCP Orchestration layer
 │   ├── src/
 │   │   └── mcp_api_server.py   	# FastMCP server implementation
 │   ├── requirements.txt        	# Python dependencies (mcp, etc.)
@@ -40,9 +40,9 @@ veth-sswan/
 ├── templates/
 │   └── swanctl.conf.j2          # Jinja2 template to update swanctl configuration
 ├── ipsec_api_server/
-│   └── api_server.py            # Backend orchestrator (runs with sudo)
-│   └── test_api_lib				         # API library with help functions
-│   └── test_api_renderer			     # Library to render swanctl config from Jinja2 templates
+│   └── api_server.py             # Backend orchestrator (runs with sudo)
+│   └── test_api_lib				          # API library with help functions
+│   └── test_api_renderer			      # Library to render swanctl config from Jinja2 templates
 └── README.md                   	# Main project documentation
 '''
 
