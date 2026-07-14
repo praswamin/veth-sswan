@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "veth-sswan-orchestrator": {
+      "command": "python3",
+      "args": [
+        "/path/to/veth-sswan/veth-sswan-orchestrator/src/server.py"
+      ]
+    }
+  }
+}
