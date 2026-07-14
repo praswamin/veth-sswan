@@ -3,7 +3,7 @@ import requests
 from jinja2 import Environment, FileSystemLoader
 
 # Initialize Jinja2 environment
-env = Environment(loader=FileSystemLoader('/home/prash/mcp-veth-sswan/ipsec_test/templates'))
+env = Environment(loader=FileSystemLoader('/path/to/veth-sswan//ipsec_test/templates'))
 template = env.get_template('swanctl.conf.j2')
 
 # In-memory state to track children for this session
