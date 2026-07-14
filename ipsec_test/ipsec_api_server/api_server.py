@@ -111,7 +111,7 @@ def ipsec_setup():
         #)
 
         return jsonify({
-                "status": status,
+                "status": "success",
                 "setup_output": f"IPsec Namespace Setup Successful\n\n{table_str}\n",
                 "stdout": setup_result["stdout"],
                 "stderr": setup_result["stderr"]
@@ -125,6 +125,75 @@ def ipsec_setup():
             for row in veth_table
         ]
     })
+
+@app.route('/namespace/add_ip', methods=['POST'])
+def add_namespace_ip():
+    """
+    Endpoint to add an IP address to the loopback interface of a namespace.
+    Matches the command: ip -n <ns> addr add <ip> dev lo [2]
+    """
+    data = request.json
+    ns = data.get('ns')      # e.g., 'hostA'
+    ip = data.get('ip')      # e.g., '10.10.0.2/32'
+    
+    if not ns or not ip:
+        return jsonify({"status": "error", "message": "Missing ns or ip"}), 400
+
+    # Execute the kernel command within the namespace
+    cmd = f"ip addr add {ip} dev lo"
+    #success, output = run_in_ns(ns, cmd)
+    output = run_in_ns(ns, cmd)
+    status = "success" if output["rc"] == 0 else "failure"
+    
+    return jsonify({
+        "namespace": ns,
+        "status": status,
+        "return_code": output["rc"], 
+        "stdout": output["stdout"],
+        "stderr": output["stderr"]
+    })
+    
+
+
+@app.route('/config/update_swanctl', methods=['POST'])
+def update_swanctl():
+    data = request.json
+    ns = data.get('host')    # e.g., 'hostA'
+    config = data.get('config')
+    
+    # Path match based on ipsec_ns_setup.sh structure [1]
+    config_path = f"/etc/ipsec-ns/{ns}/swanctl/swanctl.conf"
+    
+    try:
+        # Write the rendered configuration
+        with open(config_path, "w") as f:
+            f.write(config)
+        
+       
+        vici_socket = f"/etc/ipsec.d/run/charon-{ns}.vici"
+
+        load_all, err, rc = run_swanctl_in_ns(ns, "--load-conns", vici_socket)
+
+        loaded, failed = [], []
+
+        for line in load_all.splitlines():
+            l = line.lower()
+            if "loaded" in l:
+                loaded.append(line.strip())
+            if "failed" in l or "error" in l:
+                failed.append(line.strip())
+
+        status = "success" if rc == 0 and not failed else "partial-failure"
+
+        return jsonify({
+            "namespace": ns,
+            "status": status,
+            "loaded": loaded,
+            "failed": failed,
+            "stderr": err.strip() if err else None
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/api/ipsec/cleanup", methods=["POST"])
 def ipsec_cleanup():
@@ -238,13 +307,15 @@ def swanctl_load():
 
 @app.route("/api/ipsec/stats", methods=["GET"])
 def ipsec_stats():
-    data = request.get_json(force=True)
-
-    ns = data.get("ns")   # hostA / hostB
-    fmt = request.args.get("format", "json").lower()  # json or table
+    # Retrieve 'ns' from the URL query parameters instead of a JSON body
+    ns = request.args.get("ns")
+    fmt = request.args.get("format", "json").lower()
     
     if not ns:
         return jsonify({"error": "ns parameter required"}), 400
+
+    # Sanitize the namespace string to remove hidden newlines/whitespace
+    ns = ns.strip()
 
     vici_socket = f"/etc/ipsec.d/run/charon-{ns}.vici"
 
@@ -534,8 +605,8 @@ import os
 import re
 from flask import request, jsonify
 
-IPERF_LOG_DIR = f"{HOST_PATH}/api_server/ipsec_api_server/iperf_logs/"
-GTPU_LOG_DIR = f"{HOST_PATH}/api_server/ipsec_api_server/gtpu_logs/"
+IPERF_LOG_DIR = f"{HOST_PATH}/ipsec_api_server/iperf_logs/"
+GTPU_LOG_DIR = f"{HOST_PATH}/ipsec_api_server/gtpu_logs/"
 IPERF_CLIENT_RE = re.compile(
     r"iperf-client-(?P<ns>[^-]+)-"
     r"(?P<ip>[^-]+)-"

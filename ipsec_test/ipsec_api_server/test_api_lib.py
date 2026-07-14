@@ -171,13 +171,28 @@ def format_veth_rows(rows, get_ns=None):
 
 
 def run_in_ns(ns, cmd):
-    proc = subprocess.run(
-        ["sudo", "ip", "netns", "exec", ns, cmd],
-        text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        timeout=30
-    )
+    if isinstance(cmd, str):
+        exec_cmd = ["bash", "-lc", cmd]
+    else:
+        exec_cmd = list(cmd)
+
+    try:
+        pid = get_ns_pid(ns)
+        proc = subprocess.run(
+            ["sudo", "nsenter", "-t", pid, "-n", "-m"] + exec_cmd,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=30
+        )
+    except Exception:
+        proc = subprocess.run(
+            ["sudo", "ip", "netns", "exec", ns] + exec_cmd,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=30
+        )
 
     return {
         "rc": proc.returncode,
@@ -212,12 +227,32 @@ def get_ns_pid(ns_name):
     return pids[0]
 
 
-def run_swanctl_in_ns(ns_name, swanctl_cmd, vici_socket):
+def get_vici_socket_path(ns_name):
+    """Read the VICI socket path from the namespace's strongSwan config."""
+    try:
+        cfg = run_in_ns(ns_name, "cat /etc/strongswan.conf")
+    except Exception:
+        cfg = {"stdout": "", "rc": 1}
+
+    if cfg.get("rc", 1) == 0:
+        match = re.search(r"socket\s*=\s*(unix://\S+)", cfg.get("stdout", ""))
+        if match:
+            return match.group(1).replace("unix://", "")
+
+    return f"/etc/ipsec.d/run/charon-{ns_name}.vici"
+
+
+def run_swanctl_in_ns(ns_name, swanctl_cmd, vici_socket=None):
     """
     Execute swanctl inside a namespace using nsenter (net + mount)
     """
     pid = get_ns_pid(ns_name)
     print(f"process id: {pid}")
+
+    if not vici_socket:
+        vici_socket = get_vici_socket_path(ns_name)
+
+    uri = vici_socket if vici_socket.startswith("unix://") else f"unix://{vici_socket}"
 
     cmd = [
         "sudo",
@@ -228,7 +263,7 @@ def run_swanctl_in_ns(ns_name, swanctl_cmd, vici_socket):
         "swanctl",
         swanctl_cmd,
         "--raw",
-        "--uri",  f"unix://{vici_socket}"     
+        "--uri",  uri
     ]
 
     result = subprocess.run(
@@ -280,7 +315,7 @@ def get_free_port():
 
 def run_swanctl(ns, args):
 
-    vici_socket = f"/etc/ipsec.d/run/charon-{ns}.vici"
+    vici_socket = get_vici_socket_path(ns)
     
     pid = get_ns_pid(ns)
     print(f"process id: {pid}")
@@ -295,7 +330,7 @@ def run_swanctl(ns, args):
     ] + args
 
     if vici_socket:
-        cmd.extend(["--uri", f"unix://{vici_socket}"])
+        cmd.extend(["--uri", vici_socket if vici_socket.startswith("unix://") else f"unix://{vici_socket}"])
 
     return subprocess.run(
         cmd,
