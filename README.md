@@ -20,7 +20,7 @@ The Topology used for the setup:
 
 <img width="587" height="269" alt="Topology" src="https://github.com/user-attachments/assets/51bbf0e7-5a66-4ee8-8af3-b5e264eaf6a0" />
 
-
+```
 '''
 * Directory Structure
 veth-sswan/
@@ -45,5 +45,6 @@ veth-sswan/
 │   └── test_api_renderer			     # Library to render swanctl config from Jinja2 templates
 └── README.md                   	# Main project documentation
 '''
+```
 
 ```
