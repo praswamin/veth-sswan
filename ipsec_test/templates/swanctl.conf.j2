@@ -1,0 +1,33 @@
+connections {
+    {{ connection_name }} {
+        local_addrs = {{ local_ip }}
+        remote_addrs = {{ remote_ip }}
+        local { 
+            auth = psk 
+            id = {{ local_id }} 
+        }
+        remote { 
+            auth = psk 
+            id = {{ remote_id }} 
+        }
+        children {
+            {% for child in children %}
+            {{ child.name }} {
+                local_ts = {{ child.local_ts }}
+                remote_ts = {{ child.remote_ts }}
+                esp_proposals = aes128-sha256
+                start_action = trap
+            }
+            {% endfor %}
+        }
+        version = 2
+        proposals = aes128-sha256-modp2048
+    }
+}
+secrets {
+    ike-{{ local_id }}-{{ remote_id }} {
+        id-1 = {{ local_id }}
+        id-2 = {{ remote_id }}
+        secret = "strongsecret"
+    }
+}

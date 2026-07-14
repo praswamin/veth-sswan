@@ -1,0 +1,5 @@
+mcp>=1.27.0
+# Add other dependencies if used in your api_server.py, for example:
+pyyaml
+requests
+jinja2
