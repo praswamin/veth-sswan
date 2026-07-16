@@ -420,3 +420,88 @@ def sas_to_table(parsed):
             ])
 
     return rows
+
+def init_setup():
+    """
+    Namespace-specific initialization.
+    Handles script execution and state collection.
+    """
+    # Move namespace and interface definitions here 
+    ns_a = "hostA"
+    ns_b = "hostB"
+    if_a = "vethA-hostA"
+    if_b = "vethB-hostB"
+
+    # Format response
+    #as_table = request.args.get("format", "table") == "table"
+    as_table = (format_type == "table")
+
+
+    #1. ---- Collect current state ----
+    try:
+        rows = collect_veth_table()
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": "Failed to collect veth table",
+            "details": str(e)
+        }), 500
+    
+    # ---- Check if setup already exists ----
+    if veth_setup_exists(rows, ns_a, ns_b, if_a, if_b):
+        return jsonify({
+            "status": "already_exists",
+            "message": "Namespace and veth setup already present",
+            "existing_entries": rows
+        }), 200
+
+    # 2. Execute the infrastructure shell script 
+    script_path = f"{HOST_PATH}/ipsec_ns_setup.sh"
+    if not os.path.isfile(script_path):
+        return False, {
+            "status": "error",
+            "message": "Infrastructure script not found"
+        }
+
+    try:
+        # Runs the automated namespace and veth-pair setup
+        #subprocess.run(["sudo", "bash", "./ipsec_ns_setup.sh"], check=True)
+        setup_result = run_cmd(f"{script_path}")
+    except Exception as e:
+        return False, {
+            "status": "error",
+            "message": "Infrastructure script failed",
+            "details": str(e)
+        }
+
+    # 3. Collect current state to verify setup 
+    try:
+        veth_table = collect_veth_table()
+        if as_table:
+        table_str = tabulate(
+            veth_table,
+            headers=["Namespace", "Interface", "State", "IPv4 Address", "IPv6 Address"],
+            tablefmt="grid"
+        )
+
+        return True, {
+            "status": "success",
+            "message": setup_result["stdout"],
+            "veths": [
+                dict(ns=row[0], ifname=row[1], state=row[2], ipv4=row[4], ipv6=row[5])
+                for row in veth_table
+            ]
+        }
+    except Exception as e:
+        return False, {
+            "status": "error",
+            "message": "Infrastructure ready, but failed to collect veth table",
+            "stdout": setup_result["stdout"],
+            "stderr": setup_result["stderr"]
+        }
+
+   
+    
+
+    
+       
