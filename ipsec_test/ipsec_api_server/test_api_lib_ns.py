@@ -6,7 +6,10 @@ import re
 import os
 import psutil
 import socket
+from tabulate import tabulate
 
+HOST_PATH = os.environ['HOST_IPSEC_DIR']
+print(f"HOST_PATH: {HOST_PATH}")
 
 def run_cmd(cmd):
     result = subprocess.run(
@@ -421,7 +424,7 @@ def sas_to_table(parsed):
 
     return rows
 
-def init_setup():
+def init_setup(format_type="table"):
     """
     Namespace-specific initialization.
     Handles script execution and state collection.
@@ -441,19 +444,18 @@ def init_setup():
     try:
         rows = collect_veth_table()
     except Exception as e:
-        return jsonify({
-            "status": "error",
-            "message": "Failed to collect veth table",
-            "details": str(e)
-        }), 500
+        return False, {"status": "error", "message": str(e)} 
+
     
     # ---- Check if setup already exists ----
     if veth_setup_exists(rows, ns_a, ns_b, if_a, if_b):
-        return jsonify({
+        return True, {
             "status": "already_exists",
             "message": "Namespace and veth setup already present",
             "existing_entries": rows
-        }), 200
+        }
+    
+    
 
     # 2. Execute the infrastructure shell script 
     script_path = f"{HOST_PATH}/ipsec_ns_setup.sh"
@@ -474,6 +476,8 @@ def init_setup():
             "details": str(e)
         }
 
+
+
     # 3. Collect current state to verify setup 
     try:
         veth_table = collect_veth_table()
@@ -486,7 +490,7 @@ def init_setup():
 
         return True, {
             "status": "success",
-            "message": setup_result["stdout"],
+            "message": f"IPsec Namespace Setup Successful\n\n{table_str}\n",
             "veths": [
                 dict(ns=row[0], ifname=row[1], state=row[2], ipv4=row[4], ipv6=row[5])
                 for row in veth_table
