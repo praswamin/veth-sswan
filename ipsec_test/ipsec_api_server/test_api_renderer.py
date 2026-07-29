@@ -1,7 +1,37 @@
 from jinja2 import Environment, FileSystemLoader
 import requests
 import json
+import os
 
+# Global Configuration
+#HOST_PATH = os.environ.get('HOST_IPSEC_DIR', '/home/prash/veth-sswan-docker/ipsec_test/')
+HOST_PATH = os.environ.get('HOST_IPSEC_DIR', '')
+
+# test_api_renderer.py
+from jinja2 import Environment, FileSystemLoader
+import os
+
+def render_swanctl(params, template_name='swanctl.conf.j2'):
+    """
+    Renders the swanctl.conf and prints the result for manual verification.
+    """
+    #base_path = os.environ.get('HOST_IPSEC_DIR', '/home/prash/veth-sswan/ipsec_test/')
+    base_path = os.environ.get('HOST_IPSEC_DIR', '')
+    template_dir = os.path.join(base_path, 'templates')
+    
+    env = Environment(loader=FileSystemLoader(template_dir))
+    template = env.get_template(template_name)
+    
+    rendered_config = template.render(**params)
+
+    # Print to the API Server console for manual inspection
+    print("\n" + "="*30)
+    print("--- PRE-APPLICATION CONFIGURATION CHECK ---")
+    print(rendered_config)
+    print("="*30 + "\n")
+
+    return rendered_config
+'''
 # 1. Setup Jinja2 Environment (Match your mcp_server.py path)
 env = Environment(loader=FileSystemLoader('/home/prash/mcp-veth-sswan/ipsec_test/templates'))
 template = env.get_template('swanctl.conf.j2')
@@ -38,3 +68,5 @@ try:
     print(f"API Response Body: {response.text}")
 except Exception as e:
     print(f"Failed to connect to api_server.py: {e}")
+
+'''
