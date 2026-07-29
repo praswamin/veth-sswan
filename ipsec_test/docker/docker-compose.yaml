@@ -1,0 +1,71 @@
+services:
+  hosta:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: hostA
+    cap_add:
+      - NET_ADMIN  # Required for IPsec policy and route manipulation
+      - NET_RAW
+    volumes:
+      - ${HOST_IPSEC_DIR}/ipsec-ns/hostA/strongswan.conf:/etc/strongswan.conf
+      - ${HOST_IPSEC_DIR}/ipsec-ns/hostA/swanctl:/etc/swanctl
+      - ./logs/hostA:/var/log
+    networks:
+      net_a:
+        ipv4_address: 10.200.1.10
+# Automate loopback IP, static route, and start the daemon
+    command: >
+      /bin/bash -c "
+      mkdir -p /etc/ipsec.d/run &&
+      ip addr add 10.10.0.1/32 dev lo && 
+      ip route add 10.200.2.0/24 via 10.200.1.2 && 
+      /usr/sbin/charon-systemd --use-syslog"
+
+  router:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: router
+    cap_add:
+      - NET_ADMIN
+    sysctls:
+      - net.ipv4.ip_forward=1  # Replaces the sysctl -w in your script [4]
+    networks:
+      net_a:
+        ipv4_address: 10.200.1.2
+      net_b:
+        ipv4_address: 10.200.2.2
+
+  hostb:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: hostB
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    volumes:
+      - ${HOST_IPSEC_DIR}/ipsec-ns/hostB/strongswan.conf:/etc/strongswan.conf
+      - ${HOST_IPSEC_DIR}/ipsec-ns/hostB/swanctl:/etc/swanctl
+      - ./logs/hostB:/var/log
+    networks:
+      net_b:
+        ipv4_address: 10.200.2.20
+# Automate loopback IP, static route, and start the daemon
+    command: >
+      /bin/bash -c "
+      mkdir -p /etc/ipsec.d/run &&
+      ip addr add 10.10.1.1/32 dev lo && 
+      ip route add 10.200.1.0/24 via 10.200.2.2 && 
+      /usr/sbin/charon-systemd --use-syslog"
+
+networks:
+  net_a:
+    ipam:
+      config:
+        - subnet: 10.200.1.0/24
+  net_b:
+    ipam:
+      config:
+        - subnet: 10.200.2.0/24
